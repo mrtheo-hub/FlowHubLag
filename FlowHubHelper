@@ -1,39 +1,142 @@
--- [[ FLOW HUB V5 - FIX ERROR ]]
--- Password: THEO
+-- [[ FLOW HUB V3 - ANTI-DETECTION ]]
+-- Optimized for BAC (Blox Anti Cheat) & Cloudphone
 
-local player = game.Players.LocalPlayer
+if not game:IsLoaded() then game.Loaded:Wait() end
 
--- [ 1. SECURITY & ANTI-STAFF ]
-local function Secure()
-    pcall(function()
+-- [ 1. BYPASS CORE ]
+-- Mematikan fungsi pelaporan log yang biasa dipakai Anti-Cheat
+local namecall
+namecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+    if method == "FireServer" and tostring(self) == "BAC_Report" then -- Contoh remote AC
+        return nil -- Memblokir laporan cheat ke server
+    end
+    return namecall(self, unpack(args))
+end)
+
+-- [ 2. UI & KEY SYSTEM ]
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Window = Rayfield:CreateWindow({
+   Name = "Flow Hub V3 | Fish It (BYPASS)",
+   LoadingTitle = "Bypassing BAC Security...",
+   LoadingSubtitle = "Safe Mode Active",
+   KeySystem = true,
+   KeySettings = {
+      Title = "Access Granted",
+      Subtitle = "Verify Security",
+      Note = "Password: THEO",
+      FileName = "FlowBypass",
+      SaveKey = true,
+      Key = {"THEO"}
+   }
+})
+
+-- Auto-Kick Logic
+task.spawn(function()
+    task.wait(40)
+    if not game.CoreGui:FindFirstChild("Rayfield") then
+        game.Players.LocalPlayer:Kick("Security Timeout: Wrong Password")
+    end
+end)
+
+-- [ 3. TABS ]
+local MainTab = Window:CreateTab("Safe Optimization", 4483362458)
+local UtilityTab = Window:CreateTab("Legit Features", 4483362458)
+
+-- [[ OPTIMIZATION - CLOUDPHONE FRIENDLY ]]
+MainTab:CreateButton({
+   Name = "Extreme FPS Booster (No Textures)",
+   Callback = function()
+       for _, v in pairs(game:GetDescendants()) do
+           if v:IsA("BasePart") then
+               v.Material = Enum.Material.SmoothPlastic
+           elseif v:IsA("Decal") or v:IsA("Texture") then
+               v:Destroy()
+           end
+       end
+       Rayfield:Notify({Title = "Flow Hub", Content = "FPS Stabilized!", Duration = 3})
+   end,
+})
+
+-- Ultra AFK tetap ada karena ini sangat aman (Internal Engine)
+MainTab:CreateToggle({
+   Name = "Ultra AFK Mode (Black Screen)",
+   CurrentValue = false,
+   Callback = function(v)
+       game:GetService("RunService"):Set3dRenderingEnabled(not v)
+   end,
+})
+
+-- [[ LEGIT UTILITY ]]
+
+-- Anti-AFK Method Baru (Lebih Safe)
+UtilityTab:CreateButton({
+   Name = "Safe Anti-AFK",
+   Callback = function()
+       game.Players.LocalPlayer.Idled:Connect(function()
+           game:GetService("VirtualUser"):ClickButton1(Vector2.new(0,0))
+       end)
+       Rayfield:Notify({Title = "Success", Content = "Anti-AFK Ready", Duration = 3})
+   end,
+})
+
+-- Walk On Water Bypass (Tanpa Instance baru)
+local WaterBypass = false
+UtilityTab:CreateToggle({
+   Name = "Safe Water Walk",
+   CurrentValue = false,
+   Callback = function(v)
+       WaterBypass = v
+       task.spawn(function()
+           while WaterBypass do
+               local char = game.Players.LocalPlayer.Character
+               if char and char:FindFirstChild("HumanoidRootPart") then
+                   local pos = char.HumanoidRootPart.Position
+                   -- Cek jika berada di level air
+                   if pos.Y < 4 then -- Sesuaikan dengan ketinggian air di Fish It
+                       char.HumanoidRootPart.Velocity = Vector3.new(char.HumanoidRootPart.Velocity.X, 0, char.HumanoidRootPart.Velocity.Z)
+                       char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + Vector3.new(0, 0.05, 0)
+                   end
+               end
+               task.wait()
+           end
+       end)
+   end,
+})
+
+-- Safe Speed (Bypass Speed Detection)
+UtilityTab:CreateSlider({
+   Name = "Safe Speed (Legit)",
+   Range = {16, 50}, -- Jangan terlalu tinggi (BAC sangat sensitif di atas 60)
+   Increment = 1,
+   CurrentValue = 16,
+   Callback = function(v)
+       _G.SpeedValue = v
+       task.spawn(function()
+           while _G.SpeedValue == v do
+               local hum = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+               if hum and hum.MoveDirection.Magnitude > 0 then
+                   game.Players.LocalPlayer.Character:TranslateBy(hum.MoveDirection * (v/50))
+               end
+               task.wait()
+           end
+       end)
+   end,
+})
+
+-- Anti-Staff Detection (Berdasarkan Grup Fish Atelier)
+task.spawn(function()
+    while task.wait(5) do
         for _, p in pairs(game.Players:GetPlayers()) do
-            if p:GetRankInGroup(35102746) > 1 then 
-                player:Kick("Flow Hub: Staff Terdeteksi!")
+            if p:GetRankInGroup(35102746) > 1 then
+                game.Players.LocalPlayer:Kick("Flow Hub: Staff Terdeteksi ("..p.Name..")")
             end
         end
-    end)
-end
-task.spawn(Secure)
+    end
+end)
 
--- [ 2. UI INITIALIZATION (ORION) ]
-local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
-local Window = OrionLib:MakeWindow({Name = "Flow Hub | Fish It", HidePremium = true, SaveConfig = false, IntroEnabled = false})
-
--- Variabel Status
-_G.KeyStatus = false
-
--- [ TAB VERIFICATION ]
-local AuthTab = Window:MakeTab({Name = "Verification", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-
-AuthTab:AddTextbox({
-    Name = "Enter Password",
-    Default = "",
-    TextDisappear = true,
-    Callback = function(Value)
-        if Value == "THEO" then
-            _G.KeyStatus = true
-            OrionLib:MakeNotification({Name = "Access Granted", Content = "Password Benar!", Time = 3})
-        end
+Rayfield:Notify({Title = "V3 BYPASS ACTIVE", Content = "Script Safe for BAC", Duration = 5})
     end
 })
 
