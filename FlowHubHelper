@@ -1,39 +1,114 @@
--- [[ FLOW HUB V4 - ULTRA COMPATIBLE ]]
--- Nama UI: Flow Hub | Password: THEO
+-- [[ FLOW HUB V5 - FIX ERROR ]]
+-- Password: THEO
 
 local player = game.Players.LocalPlayer
 
--- [ 1. BYPASS & SECURITY ]
-pcall(function()
-    -- Anti-Staff (Grup Fish Atelier)
-    task.spawn(function()
-        while task.wait(10) do
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if p:GetRankInGroup(35102746) > 1 then
-                    player:Kick("Flow Hub: Staff Terdeteksi!")
-                end
+-- [ 1. SECURITY & ANTI-STAFF ]
+local function Secure()
+    pcall(function()
+        for _, p in pairs(game.Players:GetPlayers()) do
+            if p:GetRankInGroup(35102746) > 1 then 
+                player:Kick("Flow Hub: Staff Terdeteksi!")
             end
         end
     end)
-end)
+end
+task.spawn(Secure)
 
--- [ 2. UI INITIALIZATION (KAVO LIBRARY) ]
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Flow Hub | Fish It", "DarkTheme")
+-- [ 2. UI INITIALIZATION (ORION) ]
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+local Window = OrionLib:MakeWindow({Name = "Flow Hub | Fish It", HidePremium = true, SaveConfig = false, IntroEnabled = false})
 
--- Key System Manual (Agar Pasti Muncul)
-local KeyVerified = false
+-- Variabel Status
+_G.KeyStatus = false
 
--- [ TAB VERIFIKASI ]
-local Auth = Window:NewTab("Verification")
-local AuthSection = Auth:NewSection("Enter Password")
+-- [ TAB VERIFICATION ]
+local AuthTab = Window:MakeTab({Name = "Verification", Icon = "rbxassetid://4483345998", PremiumOnly = false})
 
-AuthSection:NewTextBox("Password", "Type here", function(txt)
-    if txt == "THEO" then
-        KeyVerified = true
-        Library:Notify("Access Granted", "Password Benar!", 3)
+AuthTab:AddTextbox({
+    Name = "Enter Password",
+    Default = "",
+    TextDisappear = true,
+    Callback = function(Value)
+        if Value == "THEO" then
+            _G.KeyStatus = true
+            OrionLib:MakeNotification({Name = "Access Granted", Content = "Password Benar!", Time = 3})
+        end
     end
+})
+
+AuthTab:AddButton({
+    Name = "Unlock Script",
+    Callback = function()
+        if _G.KeyStatus then
+            OrionLib:MakeNotification({Name = "Success", Content = "Fitur sudah bisa dipakai!", Time = 3})
+        else
+            player:Kick("Wrong Password/Key!")
+        end
+    end
+})
+
+-- [ TAB MAIN ]
+local MainTab = Window:MakeTab({Name = "Performance", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+
+MainTab:AddButton({
+    Name = "EXTREME FPS BOOSTER",
+    Callback = function()
+        settings().Rendering.QualityLevel = 1
+        for _, v in pairs(game:GetDescendants()) do
+            if v:IsA("BasePart") then v.Material = Enum.Material.SmoothPlastic end
+            if v:IsA("Decal") or v:IsA("Texture") then v:Destroy() end
+        end
+    end
+})
+
+MainTab:AddToggle({
+    Name = "Ultra AFK (Black Screen)",
+    Default = false,
+    Callback = function(Value)
+        game:GetService("RunService"):Set3dRenderingEnabled(not Value)
+    end
+})
+
+-- [ TAB CHEATS ]
+local CheatTab = Window:MakeTab({Name = "Main Cheats", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+
+CheatTab:AddToggle({
+    Name = "Walk On Water (Safe)",
+    Default = false,
+    Callback = function(Value)
+        _G.WOW = Value
+        task.spawn(function()
+            while _G.WOW do
+                local hrp = player.Character.HumanoidRootPart
+                if hrp.Position.Y < 4 then
+                    hrp.Velocity = Vector3.new(hrp.Velocity.X, 2, hrp.Velocity.Z)
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+CheatTab:AddSlider({
+    Name = "Speed Bypass",
+    Min = 16,
+    Max = 60,
+    Default = 16,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "Speed",
+    Callback = function(Value)
+        player.Character.Humanoid.WalkSpeed = Value
+    end    
+})
+
+-- Kick if not verified in 60s
+task.delay(60, function()
+    if not _G.KeyStatus then player:Kick("Timeout!") end
 end)
+
+OrionLib:Init()
 
 AuthSection:NewButton("Confirm & Unlock", function()
     if not KeyVerified then
