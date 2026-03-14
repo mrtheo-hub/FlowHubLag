@@ -1,39 +1,91 @@
--- [[ FLOW HUB V3 - ANTI-DETECTION ]]
--- Optimized for BAC (Blox Anti Cheat) & Cloudphone
+-- [[ FLOW HUB V4 - ULTRA COMPATIBLE ]]
+-- Nama UI: Flow Hub | Password: THEO
 
-if not game:IsLoaded() then game.Loaded:Wait() end
+local player = game.Players.LocalPlayer
 
--- [ 1. BYPASS CORE ]
--- Mematikan fungsi pelaporan log yang biasa dipakai Anti-Cheat
-local namecall
-namecall = hookmetamethod(game, "__namecall", function(self, ...)
-    local method = getnamecallmethod()
-    local args = {...}
-    if method == "FireServer" and tostring(self) == "BAC_Report" then -- Contoh remote AC
-        return nil -- Memblokir laporan cheat ke server
-    end
-    return namecall(self, unpack(args))
+-- [ 1. BYPASS & SECURITY ]
+pcall(function()
+    -- Anti-Staff (Grup Fish Atelier)
+    task.spawn(function()
+        while task.wait(10) do
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if p:GetRankInGroup(35102746) > 1 then
+                    player:Kick("Flow Hub: Staff Terdeteksi!")
+                end
+            end
+        end
+    end)
 end)
 
--- [ 2. UI & KEY SYSTEM ]
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({
-   Name = "Flow Hub V3 | Fish It (BYPASS)",
-   LoadingTitle = "Bypassing BAC Security...",
-   LoadingSubtitle = "Safe Mode Active",
-   KeySystem = true,
-   KeySettings = {
-      Title = "Access Granted",
-      Subtitle = "Verify Security",
-      Note = "Password: THEO",
-      FileName = "FlowBypass",
-      SaveKey = true,
-      Key = {"THEO"}
-   }
-})
+-- [ 2. UI INITIALIZATION (KAVO LIBRARY) ]
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("Flow Hub | Fish It", "DarkTheme")
 
--- Auto-Kick Logic
-task.spawn(function()
+-- Key System Manual (Agar Pasti Muncul)
+local KeyVerified = false
+
+-- [ TAB VERIFIKASI ]
+local Auth = Window:NewTab("Verification")
+local AuthSection = Auth:NewSection("Enter Password")
+
+AuthSection:NewTextBox("Password", "Type here", function(txt)
+    if txt == "THEO" then
+        KeyVerified = true
+        Library:Notify("Access Granted", "Password Benar!", 3)
+    end
+end)
+
+AuthSection:NewButton("Confirm & Unlock", function()
+    if not KeyVerified then
+        player:Kick("Wrong Password!")
+    else
+        Library:Notify("Unlocked", "Silakan gunakan fitur!", 3)
+    end
+end)
+
+-- [ TAB UTAMA ]
+local Main = Window:NewTab("Main")
+local MainSec = Main:NewSection("Optimization")
+
+MainSec:NewButton("FPS Booster", function()
+    settings().Rendering.QualityLevel = 1
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("BasePart") then v.Material = Enum.Material.SmoothPlastic end
+        if v:IsA("Decal") or v:IsA("Texture") then v:Destroy() end
+    end
+end)
+
+MainSec:NewToggle("Ultra AFK (Black Screen)", "Matikan render 3D", function(state)
+    game:GetService("RunService"):Set3dRenderingEnabled(not state)
+end)
+
+-- [ TAB CHEAT ]
+local Hack = Window:NewTab("Cheats")
+local HackSec = Hack:NewSection("Fish It Hacks")
+
+HackSec:NewToggle("Walk On Water", "Jalan di atas air", function(state)
+    _G.WOW = state
+    task.spawn(function()
+        while _G.WOW do
+            local hrp = player.Character.HumanoidRootPart
+            if hrp.Position.Y < 4 then -- Level air
+                hrp.Velocity = Vector3.new(hrp.Velocity.X, 2, hrp.Velocity.Z)
+            end
+            task.wait(0.1)
+        end
+    end)
+end)
+
+HackSec:NewSlider("Speed Bypass", "Safe speed", 50, 16, function(s)
+    player.Character.Humanoid.WalkSpeed = s
+end)
+
+-- Anti-Kick jika tidak input key dalam 60 detik
+task.delay(60, function()
+    if not KeyVerified then
+        player:Kick("Verification Timeout!")
+    end
+end)
     task.wait(40)
     if not game.CoreGui:FindFirstChild("Rayfield") then
         game.Players.LocalPlayer:Kick("Security Timeout: Wrong Password")
